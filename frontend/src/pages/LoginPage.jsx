@@ -1,3 +1,4 @@
+import axios from "axios";
 import {
   Anchor,
   Box,
@@ -14,14 +15,42 @@ import {
   Title,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
+import { useNavigate } from "react-router";
 
 const LoginPage = () => {
+  const navigate = useNavigate();
+
   const form = useForm({
     initialValues: {
       username: "",
       password: "",
     },
   });
+
+  const handleSubmit = (values) => {
+    form.clearErrors();
+
+    axios
+      .post("/api/v1/login", values)
+      .then((response) => {
+        localStorage.setItem("token", response.data.token);
+        navigate("/");
+      })
+      .catch((error) => {
+        if (error.response?.status === 401) {
+          form.setFieldError(
+            "username",
+            "Неверные имя пользователя или пароль",
+          );
+          return;
+        }
+
+        form.setFieldError(
+          "username",
+          "Ошибка соединения с сервером",
+        );
+      });
+  };
 
   return (
     <Box mih="100vh" bg="gray.0">
@@ -53,7 +82,7 @@ const LoginPage = () => {
                   Войти
                 </Title>
 
-                <form onSubmit={form.onSubmit(() => {})}>
+                <form onSubmit={form.onSubmit(handleSubmit)}>
                   <Stack gap="md">
                     <TextInput
                       placeholder="Ваш ник"
