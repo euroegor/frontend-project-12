@@ -17,6 +17,9 @@ importers:
       '@mantine/hooks':
         specifier: ^9.5.1
         version: 9.5.1(react@19.2.8)
+      '@tanstack/react-query':
+        specifier: ^5.102.0
+        version: 5.102.0(react@19.2.8)
       axios:
         specifier: ^1.19.0
         version: 1.19.0
@@ -29,6 +32,9 @@ importers:
       react-router:
         specifier: ^8.3.0
         version: 8.3.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      zustand:
+        specifier: ^5.0.15
+        version: 5.0.15(@types/react@19.2.18)(react@19.2.8)
     devDependencies:
       '@eslint/js':
         specifier: ^10.0.1
@@ -344,6 +350,14 @@ packages:
 
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
+
+  '@tanstack/query-core@5.102.0':
+    resolution: {integrity: sha512-tvBzr11Q7StuMCEsIJdqX8TAWt6WZIzfw/yrSAjObZDerwTTPeCxeLXN2R8ZSn4ZxFpQV819Xn8QmoO+vtnDvw==}
+
+  '@tanstack/react-query@5.102.0':
+    resolution: {integrity: sha512-0GyVyEcGt9M7jHPCua16hNVtstUXE2R4HsnNubFYcDs7DJaLzh1dSiXsADDU/cNn/SqrLfa0vRKyjUmbx4rZLA==}
+    peerDependencies:
+      react: ^18 || ^19
 
   '@types/esrecurse@4.3.1':
     resolution: {integrity: sha512-xJBAbDifo5hpffDBuHl0Y8ywswbiAp/Wi7Y/GtAgSlZyIABppyurxVueOPE8LUQOxdlgi6Zqce7uoEpqNTeiUw==}
@@ -1063,6 +1077,24 @@ packages:
   zod@4.4.3:
     resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
+  zustand@5.0.15:
+    resolution: {integrity: sha512-MpSEjRiBkA9crSYeOUH32rJC7SVqAbm0Fqcqge/bUi2PPoLcBWKOsG+C8mevmpr8TwXHBVkChbbJiyvkE+i/3A==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      '@types/react': '>=18.0.0'
+      immer: '>=9.0.6'
+      react: '>=18.0.0'
+      use-sync-external-store: '>=1.2.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      immer:
+        optional: true
+      react:
+        optional: true
+      use-sync-external-store:
+        optional: true
+
 snapshots:
 
   '@babel/code-frame@7.29.7':
@@ -1333,6 +1365,13 @@ snapshots:
   '@rolldown/pluginutils@1.0.1': {}
 
   '@standard-schema/spec@1.1.0': {}
+
+  '@tanstack/query-core@5.102.0': {}
+
+  '@tanstack/react-query@5.102.0(react@19.2.8)':
+    dependencies:
+      '@tanstack/query-core': 5.102.0
+      react: 19.2.8
 
   '@types/esrecurse@4.3.1': {}
 
@@ -1934,3 +1973,8 @@ snapshots:
       zod: 4.4.3
 
   zod@4.4.3: {}
+
+  zustand@5.0.15(@types/react@19.2.18)(react@19.2.8):
+    optionalDependencies:
+      '@types/react': 19.2.18
+      react: 19.2.8
