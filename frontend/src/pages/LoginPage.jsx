@@ -34,6 +34,7 @@ const LoginPage = () => {
       .post("/api/v1/login", values)
       .then((response) => {
         localStorage.setItem("token", response.data.token);
+        localStorage.setItem("username", response.data.username);
         navigate("/");
       })
       .catch((error) => {

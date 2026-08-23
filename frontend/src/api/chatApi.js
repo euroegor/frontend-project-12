@@ -21,3 +21,7 @@ export const getChannels = () => (
 export const getMessages = () => (
   api.get("/messages").then((response) => response.data)
 );
+
+export const addMessage = (message) => (
+  api.post("/messages", message).then((response) => response.data)
+);

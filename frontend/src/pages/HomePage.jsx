@@ -1,7 +1,16 @@
-import { useEffect, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import {
   AppShell,
+  Badge,
   Box,
   Button,
   Center,
@@ -15,11 +24,23 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
+import { useForm } from "@mantine/form";
 
-import { getChannels, getMessages } from "../api/chatApi.js";
+import {
+  addMessage,
+  getChannels,
+  getMessages,
+} from "../api/chatApi.js";
+import socket from "../socket.js";
 import useChatStore from "../store/useChatStore.js";
 
 const HomePage = () => {
+  const queryClient = useQueryClient();
+
+  const [isSocketConnected, setIsSocketConnected] = useState(
+    socket.connected,
+  );
+
   const currentChannelId = useChatStore(
     (state) => state.currentChannelId,
   );
@@ -27,6 +48,12 @@ const HomePage = () => {
   const setCurrentChannelId = useChatStore(
     (state) => state.setCurrentChannelId,
   );
+
+  const form = useForm({
+    initialValues: {
+      message: "",
+    },
+  });
 
   const channelsQuery = useQuery({
     queryKey: ["channels"],
@@ -38,17 +65,80 @@ const HomePage = () => {
     queryFn: getMessages,
   });
 
+  const sendMessageMutation = useMutation({
+    mutationFn: addMessage,
+
+    onSuccess: () => {
+      form.reset();
+    },
+
+    onError: () => {
+      form.setFieldError(
+        "message",
+        "Не удалось отправить сообщение",
+      );
+    },
+  });
+
   const channels = useMemo(
-  () => channelsQuery.data ?? [],
-  [channelsQuery.data],
-);
+    () => channelsQuery.data ?? [],
+    [channelsQuery.data],
+  );
+
   const messages = messagesQuery.data ?? [];
 
   useEffect(() => {
     if (currentChannelId === null && channels.length > 0) {
-      setCurrentChannelId(channels[0].id);
+      const generalChannel = channels.find(
+        (channel) => channel.name === "general",
+      );
+
+      setCurrentChannelId(
+        generalChannel?.id ?? channels[0].id,
+      );
     }
-  }, [channels, currentChannelId, setCurrentChannelId]);
+  }, [
+    channels,
+    currentChannelId,
+    setCurrentChannelId,
+  ]);
+
+  useEffect(() => {
+    const handleConnect = () => {
+      setIsSocketConnected(true);
+    };
+
+    const handleDisconnect = () => {
+      setIsSocketConnected(false);
+    };
+
+    const handleNewMessage = (newMessage) => {
+      queryClient.setQueryData(
+        ["messages"],
+        (oldMessages = []) => {
+          const messageExists = oldMessages.some(
+            (message) => message.id === newMessage.id,
+          );
+
+          if (messageExists) {
+            return oldMessages;
+          }
+
+          return [...oldMessages, newMessage];
+        },
+      );
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("disconnect", handleDisconnect);
+    socket.on("newMessage", handleNewMessage);
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("disconnect", handleDisconnect);
+      socket.off("newMessage", handleNewMessage);
+    };
+  }, [queryClient]);
 
   if (channelsQuery.isPending || messagesQuery.isPending) {
     return (
@@ -76,6 +166,23 @@ const HomePage = () => {
     (message) => message.channelId === currentChannelId,
   );
 
+  const handleSubmit = ({ message }) => {
+    const body = message.trim();
+    const username = localStorage.getItem("username");
+
+    if (!body || !username || !currentChannelId) {
+      return;
+    }
+
+    form.clearErrors();
+
+    sendMessageMutation.mutate({
+      body,
+      channelId: currentChannelId,
+      username,
+    });
+  };
+
   return (
     <AppShell
       header={{ height: 60 }}
@@ -86,8 +193,23 @@ const HomePage = () => {
       padding="md"
     >
       <AppShell.Header>
-        <Group h="100%" px="md">
-          <Title order={3}>Hexlet Chat</Title>
+        <Group
+          h="100%"
+          px="md"
+          justify="space-between"
+        >
+          <Title order={3}>
+            Hexlet Chat
+          </Title>
+
+          <Badge
+            color={isSocketConnected ? "green" : "red"}
+            variant="light"
+          >
+            {isSocketConnected
+              ? "В сети"
+              : "Нет соединения"}
+          </Badge>
         </Group>
       </AppShell.Header>
 
@@ -138,18 +260,22 @@ const HomePage = () => {
             </Stack>
           </ScrollArea>
 
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-            }}
-          >
-            <Group gap="sm">
+          <form onSubmit={form.onSubmit(handleSubmit)}>
+            <Group
+              gap="sm"
+              align="flex-start"
+            >
               <TextInput
                 placeholder="Введите сообщение..."
                 flex={1}
+                disabled={sendMessageMutation.isPending}
+                {...form.getInputProps("message")}
               />
 
-              <Button type="submit">
+              <Button
+                type="submit"
+                loading={sendMessageMutation.isPending}
+              >
                 Отправить
               </Button>
             </Group>
