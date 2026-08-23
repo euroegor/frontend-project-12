@@ -1,13 +1,5 @@
-import {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AppShell,
   Badge,
@@ -16,7 +8,6 @@ import {
   Center,
   Group,
   Loader,
-  NavLink,
   Paper,
   ScrollArea,
   Stack,
@@ -26,24 +17,18 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 
-import {
-  addMessage,
-  getChannels,
-  getMessages,
-} from "../api/chatApi.js";
+import { addMessage, getChannels, getMessages } from "../api/chatApi.js";
 import socket from "../socket.js";
 import useChatStore from "../store/useChatStore.js";
+import ChannelsSidebar from "../components/ChannelsSidebar.jsx";
+import ChannelModals from "../components/ChannelModals.jsx";
 
 const HomePage = () => {
   const queryClient = useQueryClient();
 
-  const [isSocketConnected, setIsSocketConnected] = useState(
-    socket.connected,
-  );
+  const [isSocketConnected, setIsSocketConnected] = useState(socket.connected);
 
-  const currentChannelId = useChatStore(
-    (state) => state.currentChannelId,
-  );
+  const currentChannelId = useChatStore((state) => state.currentChannelId);
 
   const setCurrentChannelId = useChatStore(
     (state) => state.setCurrentChannelId,
@@ -73,10 +58,7 @@ const HomePage = () => {
     },
 
     onError: () => {
-      form.setFieldError(
-        "message",
-        "Не удалось отправить сообщение",
-      );
+      form.setFieldError("message", "Не удалось отправить сообщение");
     },
   });
 
@@ -93,15 +75,9 @@ const HomePage = () => {
         (channel) => channel.name === "general",
       );
 
-      setCurrentChannelId(
-        generalChannel?.id ?? channels[0].id,
-      );
+      setCurrentChannelId(generalChannel?.id ?? channels[0].id);
     }
-  }, [
-    channels,
-    currentChannelId,
-    setCurrentChannelId,
-  ]);
+  }, [channels, currentChannelId, setCurrentChannelId]);
 
   useEffect(() => {
     const handleConnect = () => {
@@ -113,30 +89,78 @@ const HomePage = () => {
     };
 
     const handleNewMessage = (newMessage) => {
-      queryClient.setQueryData(
-        ["messages"],
-        (oldMessages = []) => {
-          const messageExists = oldMessages.some(
-            (message) => message.id === newMessage.id,
-          );
+      queryClient.setQueryData(["messages"], (oldMessages = []) => {
+        const messageExists = oldMessages.some(
+          (message) => message.id === newMessage.id,
+        );
 
-          if (messageExists) {
-            return oldMessages;
-          }
+        if (messageExists) {
+          return oldMessages;
+        }
 
-          return [...oldMessages, newMessage];
-        },
+        return [...oldMessages, newMessage];
+      });
+    };
+
+    const handleNewChannel = (newChannel) => {
+      queryClient.setQueryData(["channels"], (oldChannels = []) => {
+        const channelExists = oldChannels.some(
+          (channel) => channel.id === newChannel.id,
+        );
+
+        if (channelExists) {
+          return oldChannels;
+        }
+
+        return [...oldChannels, newChannel];
+      });
+    };
+
+    const handleRenameChannel = (renamedChannel) => {
+      queryClient.setQueryData(["channels"], (oldChannels = []) =>
+        oldChannels.map((channel) =>
+          channel.id === renamedChannel.id ? renamedChannel : channel,
+        ),
       );
+    };
+
+    const handleRemoveChannel = ({ id }) => {
+      const oldChannels = queryClient.getQueryData(["channels"]) ?? [];
+
+      const defaultChannel = oldChannels.find(
+        (channel) => channel.name === "general",
+      );
+
+      queryClient.setQueryData(
+        ["channels"],
+        oldChannels.filter((channel) => channel.id !== id),
+      );
+
+      queryClient.setQueryData(["messages"], (oldMessages = []) =>
+        oldMessages.filter((message) => message.channelId !== id),
+      );
+
+      const activeChannelId = useChatStore.getState().currentChannelId;
+
+      if (activeChannelId === id) {
+        useChatStore.getState().setCurrentChannelId(defaultChannel?.id ?? null);
+      }
     };
 
     socket.on("connect", handleConnect);
     socket.on("disconnect", handleDisconnect);
     socket.on("newMessage", handleNewMessage);
+    socket.on("newChannel", handleNewChannel);
+    socket.on("renameChannel", handleRenameChannel);
+    socket.on("removeChannel", handleRemoveChannel);
 
     return () => {
       socket.off("connect", handleConnect);
       socket.off("disconnect", handleDisconnect);
       socket.off("newMessage", handleNewMessage);
+      socket.off("newChannel", handleNewChannel);
+      socket.off("renameChannel", handleRenameChannel);
+      socket.off("removeChannel", handleRemoveChannel);
     };
   }, [queryClient]);
 
@@ -151,9 +175,7 @@ const HomePage = () => {
   if (channelsQuery.isError || messagesQuery.isError) {
     return (
       <Center h="100vh">
-        <Text c="red">
-          Не удалось загрузить данные чата
-        </Text>
+        <Text c="red">Не удалось загрузить данные чата</Text>
       </Center>
     );
   }
@@ -193,51 +215,23 @@ const HomePage = () => {
       padding="md"
     >
       <AppShell.Header>
-        <Group
-          h="100%"
-          px="md"
-          justify="space-between"
-        >
-          <Title order={3}>
-            Hexlet Chat
-          </Title>
+        <Group h="100%" px="md" justify="space-between">
+          <Title order={3}>Hexlet Chat</Title>
 
-          <Badge
-            color={isSocketConnected ? "green" : "red"}
-            variant="light"
-          >
-            {isSocketConnected
-              ? "В сети"
-              : "Нет соединения"}
+          <Badge color={isSocketConnected ? "green" : "red"} variant="light">
+            {isSocketConnected ? "В сети" : "Нет соединения"}
           </Badge>
         </Group>
       </AppShell.Header>
 
       <AppShell.Navbar p="md">
-        <Title order={4} mb="md">
-          Каналы
-        </Title>
-
-        <Stack gap="xs">
-          {channels.map((channel) => (
-            <NavLink
-              key={channel.id}
-              label={`# ${channel.name}`}
-              active={channel.id === currentChannelId}
-              onClick={() => {
-                setCurrentChannelId(channel.id);
-              }}
-            />
-          ))}
-        </Stack>
+        <ChannelsSidebar channels={channels} />
       </AppShell.Navbar>
 
       <AppShell.Main>
         <Stack h="calc(100vh - 92px)">
           <Paper withBorder p="md">
-            <Title order={4}>
-              # {currentChannel?.name}
-            </Title>
+            <Title order={4}># {currentChannel?.name}</Title>
 
             <Text c="dimmed" size="sm">
               {currentMessages.length} сообщений
@@ -248,7 +242,7 @@ const HomePage = () => {
             <Stack gap="sm">
               {currentMessages.map((message) => (
                 <Box key={message.id}>
-                  <Text>
+                  <Text style={{ overflowWrap: "anywhere" }}>
                     <Text span fw={700}>
                       {message.username}
                     </Text>
@@ -261,10 +255,7 @@ const HomePage = () => {
           </ScrollArea>
 
           <form onSubmit={form.onSubmit(handleSubmit)}>
-            <Group
-              gap="sm"
-              align="flex-start"
-            >
+            <Group gap="sm" align="flex-start">
               <TextInput
                 placeholder="Введите сообщение..."
                 flex={1}
@@ -272,16 +263,14 @@ const HomePage = () => {
                 {...form.getInputProps("message")}
               />
 
-              <Button
-                type="submit"
-                loading={sendMessageMutation.isPending}
-              >
+              <Button type="submit" loading={sendMessageMutation.isPending}>
                 Отправить
               </Button>
             </Group>
           </form>
         </Stack>
       </AppShell.Main>
+      <ChannelModals channels={channels} />
     </AppShell>
   );
 };

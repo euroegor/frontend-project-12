@@ -25,3 +25,15 @@ export const getMessages = () => (
 export const addMessage = (message) => (
   api.post("/messages", message).then((response) => response.data)
 );
+
+export const addChannel = (name) => (
+  api.post("/channels", { name }).then((response) => response.data)
+);
+
+export const renameChannel = ({ id, name }) => (
+  api.patch(`/channels/${id}`, { name }).then((response) => response.data)
+);
+
+export const removeChannel = (id) => (
+  api.delete(`/channels/${id}`).then((response) => response.data)
+);

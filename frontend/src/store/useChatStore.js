@@ -8,8 +8,13 @@ const useChatStore = create((set) => ({
     set({ currentChannelId: channelId });
   },
 
-  openModal: (modal) => {
-    set({ modal });
+  openModal: (type, channelId = null) => {
+    set({
+      modal: {
+        type,
+        channelId,
+      },
+    });
   },
 
   closeModal: () => {
