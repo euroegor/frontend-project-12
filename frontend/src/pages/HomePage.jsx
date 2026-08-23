@@ -277,15 +277,10 @@ const HomePage = () => {
             <Stack gap="sm">
               {currentMessages.map((message) => (
                 <Box key={message.id}>
-                  <Text
-                    style={{
-                      overflowWrap: "anywhere",
-                    }}
-                  >
+                  <Text>
                     <Text span fw={700}>
                       {message.username}
                     </Text>
-
                     {": "}
                     {message.body}
                   </Text>
