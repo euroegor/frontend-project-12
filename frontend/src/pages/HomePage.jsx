@@ -16,21 +16,30 @@ import {
   Title,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { addMessage, getChannels, getMessages } from "../api/chatApi.js";
-import socket from "../socket.js";
-import useChatStore from "../store/useChatStore.js";
-import ChannelsSidebar from "../components/ChannelsSidebar.jsx";
-import ChannelModals from "../components/ChannelModals.jsx";
-import AppHeader from "../components/AppHeader.jsx";
-import { useTranslation } from "react-i18next";
 import { notifications } from "@mantine/notifications";
+import { useTranslation } from "react-i18next";
+
+import { addMessage, getChannels, getMessages } from "../api/chatApi.js";
+import AppHeader from "../components/AppHeader.jsx";
+import ChannelModals from "../components/ChannelModals.jsx";
+import ChannelsSidebar from "../components/ChannelsSidebar.jsx";
+import {
+  useChatStore,
+  useChatStoreApi,
+} from "../hooks/useChatStore.js";
+import useSocket from "../hooks/useSocket.js";
 import cleanText from "../utils/profanityFilter.js";
 
 const HomePage = () => {
   const { t } = useTranslation();
-  const queryClient = useQueryClient();
 
-  const [isSocketConnected, setIsSocketConnected] = useState(socket.connected);
+  const queryClient = useQueryClient();
+  const socket = useSocket();
+  const chatStore = useChatStoreApi();
+
+  const [isSocketConnected, setIsSocketConnected] = useState(
+    Boolean(socket.connected),
+  );
 
   const currentChannelId = useChatStore((state) => state.currentChannelId);
 
@@ -153,10 +162,10 @@ const HomePage = () => {
         oldMessages.filter((message) => message.channelId !== id),
       );
 
-      const activeChannelId = useChatStore.getState().currentChannelId;
+      const activeChannelId = chatStore.getState().currentChannelId;
 
       if (activeChannelId === id) {
-        useChatStore.getState().setCurrentChannelId(defaultChannel?.id ?? null);
+        chatStore.getState().setCurrentChannelId(defaultChannel?.id ?? null);
       }
     };
 
@@ -175,7 +184,7 @@ const HomePage = () => {
       socket.off("renameChannel", handleRenameChannel);
       socket.off("removeChannel", handleRemoveChannel);
     };
-  }, [queryClient, t]);
+  }, [socket, queryClient, chatStore, t]);
 
   useEffect(() => {
     if (channelsQuery.isError || messagesQuery.isError) {
@@ -213,6 +222,7 @@ const HomePage = () => {
 
   const handleSubmit = ({ message }) => {
     const body = cleanText(message.trim());
+
     const username = localStorage.getItem("username");
 
     if (!body || !username || !currentChannelId) {
@@ -267,10 +277,15 @@ const HomePage = () => {
             <Stack gap="sm">
               {currentMessages.map((message) => (
                 <Box key={message.id}>
-                  <Text style={{ overflowWrap: "anywhere" }}>
+                  <Text
+                    style={{
+                      overflowWrap: "anywhere",
+                    }}
+                  >
                     <Text span fw={700}>
                       {message.username}
                     </Text>
+
                     {": "}
                     {message.body}
                   </Text>
@@ -282,6 +297,7 @@ const HomePage = () => {
           <form onSubmit={form.onSubmit(handleSubmit)}>
             <Group gap="sm" align="flex-start">
               <TextInput
+                aria-label={t("chat.messagePlaceholder")}
                 placeholder={t("chat.messagePlaceholder")}
                 flex={1}
                 disabled={sendMessageMutation.isPending}
@@ -295,6 +311,7 @@ const HomePage = () => {
           </form>
         </Stack>
       </AppShell.Main>
+
       <ChannelModals channels={channels} />
     </AppShell>
   );

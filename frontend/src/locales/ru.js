@@ -13,7 +13,7 @@ const ru = {
     signup: "Регистрация",
     errors: {
       invalidCredentials: "Неверные имя пользователя или пароль",
-      network: "Ошибка соединения с сервером",
+      network: "Ошибка соединения",
     },
   },
 
@@ -47,7 +47,7 @@ const ru = {
     sendError: "Не удалось отправить сообщение",
 
     notifications: {
-      networkError: "Соединение с сервером потеряно",
+      networkError: "Ошибка соединения",
       loadError: "Не удалось загрузить данные чата",
     },
   },
@@ -71,9 +71,9 @@ const ru = {
       error: "Не удалось удалить канал",
     },
 
-    addAction: "Добавить канал",
+    addAction: "+",
     cancel: "Отмена",
-    manage: "Управление каналом {{name}}",
+    manage: "Управление каналом",
     renameAction: "Переименовать",
     removeAction: "Удалить",
 

@@ -8,12 +8,13 @@ import {
   Text,
   Title,
 } from "@mantine/core";
-
-import useChatStore from "../store/useChatStore.js";
 import { useTranslation } from "react-i18next";
+
+import { useChatStore } from "../hooks/useChatStore.js";
 
 const ChannelsSidebar = ({ channels }) => {
   const { t } = useTranslation();
+
   const currentChannelId = useChatStore((state) => state.currentChannelId);
 
   const setCurrentChannelId = useChatStore(
@@ -54,9 +55,7 @@ const ChannelsSidebar = ({ channels }) => {
                 <Menu.Target>
                   <ActionIcon
                     variant="subtle"
-                    aria-label={t("channels.manage", {
-                      name: channel.name,
-                    })}
+                    aria-label={t("channels.manage")}
                   >
                     ⋮
                   </ActionIcon>

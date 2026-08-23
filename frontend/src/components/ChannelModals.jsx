@@ -3,8 +3,9 @@ import { hasLength, isNotEmpty, useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+
 import { addChannel, removeChannel, renameChannel } from "../api/chatApi.js";
-import useChatStore from "../store/useChatStore.js";
+import { useChatStore } from "../hooks/useChatStore.js";
 import cleanText from "../utils/profanityFilter.js";
 
 const validateChannelName = (value, channels, t, currentChannelId = null) => {
@@ -43,14 +44,13 @@ const validateChannelName = (value, channels, t, currentChannelId = null) => {
 
 const AddChannelModal = ({ channels }) => {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
 
   const closeModal = useChatStore((state) => state.closeModal);
 
   const setCurrentChannelId = useChatStore(
     (state) => state.setCurrentChannelId,
   );
-
-  const queryClient = useQueryClient();
 
   const form = useForm({
     initialValues: {
@@ -96,6 +96,7 @@ const AddChannelModal = ({ channels }) => {
         <Stack>
           <TextInput
             autoFocus
+            aria-label={t("channels.add.placeholder")}
             placeholder={t("channels.add.placeholder")}
             disabled={mutation.isPending}
             {...form.getInputProps("name")}
@@ -122,10 +123,9 @@ const AddChannelModal = ({ channels }) => {
 
 const RenameChannelModal = ({ channel, channels }) => {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
 
   const closeModal = useChatStore((state) => state.closeModal);
-
-  const queryClient = useQueryClient();
 
   const form = useForm({
     initialValues: {
@@ -176,6 +176,7 @@ const RenameChannelModal = ({ channel, channels }) => {
         <Stack>
           <TextInput
             autoFocus
+            aria-label={t("channels.add.placeholder")}
             disabled={mutation.isPending}
             {...form.getInputProps("name")}
           />
@@ -201,6 +202,7 @@ const RenameChannelModal = ({ channel, channels }) => {
 
 const RemoveChannelModal = ({ channel, channels }) => {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
 
   const closeModal = useChatStore((state) => state.closeModal);
 
@@ -209,8 +211,6 @@ const RemoveChannelModal = ({ channel, channels }) => {
   const setCurrentChannelId = useChatStore(
     (state) => state.setCurrentChannelId,
   );
-
-  const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: removeChannel,
