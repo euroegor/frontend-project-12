@@ -1,16 +1,20 @@
 import { Button, Group, Modal, Stack, Text, TextInput } from "@mantine/core";
 import { hasLength, isNotEmpty, useForm } from "@mantine/form";
+import { notifications } from "@mantine/notifications";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 
 import { addChannel, removeChannel, renameChannel } from "../api/chatApi.js";
 import useChatStore from "../store/useChatStore.js";
-import { notifications } from "@mantine/notifications";
 
-const validateNotEmpty = isNotEmpty("Введите имя канала");
+const validateChannelName = (value, channels, t, currentChannelId = null) => {
+  const validateNotEmpty = isNotEmpty(t("channels.errors.required"));
 
-const validateLength = hasLength({ min: 3, max: 20 }, "От 3 до 20 символов");
+  const validateLength = hasLength(
+    { min: 3, max: 20 },
+    t("channels.errors.length"),
+  );
 
-const validateChannelName = (value, channels, currentChannelId = null) => {
   const emptyError = validateNotEmpty(value);
 
   if (emptyError) {
@@ -31,13 +35,15 @@ const validateChannelName = (value, channels, currentChannelId = null) => {
   );
 
   if (channelExists) {
-    return "Канал с таким именем уже существует";
+    return t("channels.errors.duplicate");
   }
 
   return null;
 };
 
 const AddChannelModal = ({ channels }) => {
+  const { t } = useTranslation();
+
   const closeModal = useChatStore((state) => state.closeModal);
 
   const setCurrentChannelId = useChatStore(
@@ -52,7 +58,7 @@ const AddChannelModal = ({ channels }) => {
     },
 
     validate: {
-      name: (value) => validateChannelName(value, channels),
+      name: (value) => validateChannelName(value, channels, t),
     },
   });
 
@@ -68,7 +74,7 @@ const AddChannelModal = ({ channels }) => {
 
       notifications.show({
         color: "green",
-        message: "Канал создан",
+        message: t("channels.notifications.created"),
       });
 
       form.reset();
@@ -76,7 +82,7 @@ const AddChannelModal = ({ channels }) => {
     },
 
     onError: () => {
-      form.setFieldError("name", "Не удалось создать канал");
+      form.setFieldError("name", t("channels.errors.add"));
     },
   });
 
@@ -85,12 +91,12 @@ const AddChannelModal = ({ channels }) => {
   };
 
   return (
-    <Modal opened onClose={closeModal} title="Добавить канал" centered>
+    <Modal opened onClose={closeModal} title={t("channels.add.title")} centered>
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack>
           <TextInput
             autoFocus
-            placeholder="Имя канала"
+            placeholder={t("channels.add.placeholder")}
             disabled={mutation.isPending}
             {...form.getInputProps("name")}
           />
@@ -101,11 +107,11 @@ const AddChannelModal = ({ channels }) => {
               onClick={closeModal}
               disabled={mutation.isPending}
             >
-              Отмена
+              {t("channels.cancel")}
             </Button>
 
             <Button type="submit" loading={mutation.isPending}>
-              Добавить
+              {t("channels.add.submit")}
             </Button>
           </Group>
         </Stack>
@@ -115,6 +121,8 @@ const AddChannelModal = ({ channels }) => {
 };
 
 const RenameChannelModal = ({ channel, channels }) => {
+  const { t } = useTranslation();
+
   const closeModal = useChatStore((state) => state.closeModal);
 
   const queryClient = useQueryClient();
@@ -125,7 +133,7 @@ const RenameChannelModal = ({ channel, channels }) => {
     },
 
     validate: {
-      name: (value) => validateChannelName(value, channels, channel.id),
+      name: (value) => validateChannelName(value, channels, t, channel.id),
     },
   });
 
@@ -139,14 +147,14 @@ const RenameChannelModal = ({ channel, channels }) => {
 
       notifications.show({
         color: "green",
-        message: "Канал переименован",
+        message: t("channels.notifications.renamed"),
       });
 
       closeModal();
     },
 
     onError: () => {
-      form.setFieldError("name", "Не удалось переименовать канал");
+      form.setFieldError("name", t("channels.errors.rename"));
     },
   });
 
@@ -158,7 +166,12 @@ const RenameChannelModal = ({ channel, channels }) => {
   };
 
   return (
-    <Modal opened onClose={closeModal} title="Переименовать канал" centered>
+    <Modal
+      opened
+      onClose={closeModal}
+      title={t("channels.rename.title")}
+      centered
+    >
       <form onSubmit={form.onSubmit(handleSubmit)}>
         <Stack>
           <TextInput
@@ -173,11 +186,11 @@ const RenameChannelModal = ({ channel, channels }) => {
               onClick={closeModal}
               disabled={mutation.isPending}
             >
-              Отмена
+              {t("channels.cancel")}
             </Button>
 
             <Button type="submit" loading={mutation.isPending}>
-              Переименовать
+              {t("channels.rename.submit")}
             </Button>
           </Group>
         </Stack>
@@ -187,6 +200,8 @@ const RenameChannelModal = ({ channel, channels }) => {
 };
 
 const RemoveChannelModal = ({ channel, channels }) => {
+  const { t } = useTranslation();
+
   const closeModal = useChatStore((state) => state.closeModal);
 
   const currentChannelId = useChatStore((state) => state.currentChannelId);
@@ -217,7 +232,7 @@ const RemoveChannelModal = ({ channel, channels }) => {
 
       notifications.show({
         color: "green",
-        message: "Канал удалён",
+        message: t("channels.notifications.removed"),
       });
 
       closeModal();
@@ -225,7 +240,12 @@ const RemoveChannelModal = ({ channel, channels }) => {
   });
 
   return (
-    <Modal opened onClose={closeModal} title="Удалить канал" centered>
+    <Modal
+      opened
+      onClose={closeModal}
+      title={t("channels.remove.title")}
+      centered
+    >
       <form
         onSubmit={(event) => {
           event.preventDefault();
@@ -234,16 +254,14 @@ const RemoveChannelModal = ({ channel, channels }) => {
       >
         <Stack>
           <Text>
-            Уверены, что хотите удалить канал{" "}
-            <Text span fw={700}>
-              # {channel.name}
-            </Text>
-            ?
+            {t("channels.remove.question", {
+              name: channel.name,
+            })}
           </Text>
 
           {mutation.isError && (
             <Text c="red" size="sm">
-              Не удалось удалить канал
+              {t("channels.remove.error")}
             </Text>
           )}
 
@@ -253,11 +271,11 @@ const RemoveChannelModal = ({ channel, channels }) => {
               onClick={closeModal}
               disabled={mutation.isPending}
             >
-              Отмена
+              {t("channels.cancel")}
             </Button>
 
             <Button type="submit" color="red" loading={mutation.isPending}>
-              Удалить
+              {t("channels.remove.submit")}
             </Button>
           </Group>
         </Stack>

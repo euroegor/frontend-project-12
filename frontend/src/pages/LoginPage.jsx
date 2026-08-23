@@ -17,8 +17,10 @@ import {
 import { useForm } from "@mantine/form";
 import { Link, useNavigate } from "react-router";
 import AppHeader from "../components/AppHeader.jsx";
+import { useTranslation } from "react-i18next";
 
 const LoginPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const form = useForm({
@@ -40,14 +42,11 @@ const LoginPage = () => {
       })
       .catch((error) => {
         if (error.response?.status === 401) {
-          form.setFieldError(
-            "username",
-            "Неверные имя пользователя или пароль",
-          );
+          form.setFieldError("username", t("login.errors.invalidCredentials"));
           return;
         }
 
-        form.setFieldError("username", "Ошибка соединения с сервером");
+        form.setFieldError("username", t("login.errors.network"));
       });
   };
 
@@ -65,25 +64,25 @@ const LoginPage = () => {
             <Group align="center" justify="center" gap={64} wrap="nowrap">
               <Box w={340}>
                 <Title order={1} ta="center" mb="md">
-                  Войти
+                  {t("login.title")}
                 </Title>
 
                 <form onSubmit={form.onSubmit(handleSubmit)}>
                   <Stack gap="md">
                     <TextInput
-                      placeholder="Ваш ник"
+                      placeholder={t("login.username")}
                       size="md"
                       {...form.getInputProps("username")}
                     />
 
                     <PasswordInput
-                      placeholder="Пароль"
+                      placeholder={t("login.password")}
                       size="md"
                       {...form.getInputProps("password")}
                     />
 
                     <Button type="submit" variant="outline" fullWidth>
-                      Войти
+                      {t("login.submit")}
                     </Button>
                   </Stack>
                 </form>
@@ -95,9 +94,9 @@ const LoginPage = () => {
 
           <Box py="lg" bg="gray.0">
             <Text ta="center">
-              Нет аккаунта?{" "}
+              {t("login.noAccount")}{" "}
               <Anchor component={Link} to="/signup">
-                Регистрация
+                {t("login.signup")}
               </Anchor>
             </Text>
           </Box>

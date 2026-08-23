@@ -16,15 +16,16 @@ import {
   Title,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-
 import { addMessage, getChannels, getMessages } from "../api/chatApi.js";
 import socket from "../socket.js";
 import useChatStore from "../store/useChatStore.js";
 import ChannelsSidebar from "../components/ChannelsSidebar.jsx";
 import ChannelModals from "../components/ChannelModals.jsx";
 import AppHeader from "../components/AppHeader.jsx";
+import { useTranslation } from "react-i18next";
 
 const HomePage = () => {
+  const { t } = useTranslation();
   const queryClient = useQueryClient();
 
   const [isSocketConnected, setIsSocketConnected] = useState(socket.connected);
@@ -59,7 +60,7 @@ const HomePage = () => {
     },
 
     onError: () => {
-      form.setFieldError("message", "Не удалось отправить сообщение");
+      form.setFieldError("message", t("chat.sendError"));
     },
   });
 
@@ -176,7 +177,7 @@ const HomePage = () => {
   if (channelsQuery.isError || messagesQuery.isError) {
     return (
       <Center h="100vh">
-        <Text c="red">Не удалось загрузить данные чата</Text>
+        <Text c="red">{t("chat.loadError")}</Text>
       </Center>
     );
   }
@@ -219,7 +220,7 @@ const HomePage = () => {
         <Box h="100%" px="md">
           <AppHeader>
             <Badge color={isSocketConnected ? "green" : "red"} variant="light">
-              {isSocketConnected ? "В сети" : "Нет соединения"}
+              {isSocketConnected ? t("chat.online") : t("chat.offline")}
             </Badge>
           </AppHeader>
         </Box>
@@ -235,7 +236,9 @@ const HomePage = () => {
             <Title order={4}># {currentChannel?.name}</Title>
 
             <Text c="dimmed" size="sm">
-              {currentMessages.length} сообщений
+              {t("chat.messagesCount", {
+                count: currentMessages.length,
+              })}
             </Text>
           </Paper>
 
@@ -258,14 +261,14 @@ const HomePage = () => {
           <form onSubmit={form.onSubmit(handleSubmit)}>
             <Group gap="sm" align="flex-start">
               <TextInput
-                placeholder="Введите сообщение..."
+                placeholder={t("chat.messagePlaceholder")}
                 flex={1}
                 disabled={sendMessageMutation.isPending}
                 {...form.getInputProps("message")}
               />
 
               <Button type="submit" loading={sendMessageMutation.isPending}>
-                Отправить
+                {t("chat.send")}
               </Button>
             </Group>
           </form>

@@ -9,39 +9,33 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
-import {
-  hasLength,
-  isNotEmpty,
-  matchesField,
-  useForm,
-} from "@mantine/form";
+import { hasLength, isNotEmpty, matchesField, useForm } from "@mantine/form";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
-
 import { signupUser } from "../api/authApi.js";
 import AppHeader from "../components/AppHeader.jsx";
-
-const required = isNotEmpty(
-  "Обязательное поле",
-);
-
-const usernameLength = hasLength(
-  { min: 3, max: 20 },
-  "От 3 до 20 символов",
-);
-
-const passwordLength = hasLength(
-  { min: 6 },
-  "Не менее 6 символов",
-);
-
-const passwordsMatch = matchesField(
-  "password",
-  "Пароли должны совпадать",
-);
+import { useTranslation } from "react-i18next";
 
 const SignupPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
+
+  const required = isNotEmpty(t("signup.errors.required"));
+
+  const usernameLength = hasLength(
+    { min: 3, max: 20 },
+    t("signup.errors.usernameLength"),
+  );
+
+  const passwordLength = hasLength(
+    { min: 6 },
+    t("signup.errors.passwordLength"),
+  );
+
+  const passwordsMatch = matchesField(
+    "password",
+    t("signup.errors.passwordsMatch"),
+  );
 
   const form = useForm({
     initialValues: {
@@ -51,20 +45,12 @@ const SignupPage = () => {
     },
 
     validate: {
-      username: (value) => (
-        required(value)
-        || usernameLength(value)
-      ),
+      username: (value) => required(value) || usernameLength(value.trim()),
 
-      password: (value) => (
-        required(value)
-        || passwordLength(value)
-      ),
+      password: (value) => required(value) || passwordLength(value),
 
-      confirmPassword: (value, values) => (
-        required(value)
-        || passwordsMatch(value, values)
-      ),
+      confirmPassword: (value, values) =>
+        required(value) || passwordsMatch(value, values),
     },
   });
 
@@ -72,15 +58,9 @@ const SignupPage = () => {
     mutationFn: signupUser,
 
     onSuccess: (data) => {
-      localStorage.setItem(
-        "token",
-        data.token,
-      );
+      localStorage.setItem("token", data.token);
 
-      localStorage.setItem(
-        "username",
-        data.username,
-      );
+      localStorage.setItem("username", data.username);
 
       navigate("/", {
         replace: true,
@@ -89,25 +69,16 @@ const SignupPage = () => {
 
     onError: (error) => {
       if (error.response?.status === 409) {
-        form.setFieldError(
-          "username",
-          "Такой пользователь уже существует",
-        );
+        form.setFieldError("username", t("signup.errors.userExists"));
 
         return;
       }
 
-      form.setFieldError(
-        "username",
-        "Не удалось зарегистрироваться",
-      );
+      form.setFieldError("username", t("signup.errors.network"));
     },
   });
 
-  const handleSubmit = ({
-    username,
-    password,
-  }) => {
+  const handleSubmit = ({ username, password }) => {
     form.clearErrors();
 
     signupMutation.mutate({
@@ -118,80 +89,41 @@ const SignupPage = () => {
 
   return (
     <Box mih="100vh" bg="gray.0">
-      <Paper
-        radius={0}
-        shadow="xs"
-        py="sm"
-      >
+      <Paper radius={0} shadow="xs" py="sm">
         <Container size="lg">
           <AppHeader />
         </Container>
       </Paper>
 
-      <Center
-        mih="calc(100vh - 60px)"
-        px="md"
-      >
-        <Paper
-          withBorder
-          shadow="sm"
-          radius="sm"
-          w={500}
-          maw="100%"
-          p="xl"
-        >
-          <Title
-            order={1}
-            ta="center"
-            mb="lg"
-          >
-            Регистрация
+      <Center mih="calc(100vh - 60px)" px="md">
+        <Paper withBorder shadow="sm" radius="sm" w={500} maw="100%" p="xl">
+          <Title order={1} ta="center" mb="lg">
+            {t("signup.title")}
           </Title>
 
-          <form
-            onSubmit={form.onSubmit(
-              handleSubmit,
-            )}
-          >
+          <form onSubmit={form.onSubmit(handleSubmit)}>
             <Stack gap="md">
               <TextInput
-                placeholder="Имя пользователя"
+                placeholder={t("signup.username")}
                 autoFocus
-                disabled={
-                  signupMutation.isPending
-                }
-                {...form.getInputProps(
-                  "username",
-                )}
+                disabled={signupMutation.isPending}
+                {...form.getInputProps("username")}
               />
 
               <PasswordInput
-                placeholder="Пароль"
-                disabled={
-                  signupMutation.isPending
-                }
-                {...form.getInputProps(
-                  "password",
-                )}
+                placeholder={t("signup.password")}
+                disabled={signupMutation.isPending}
+                {...form.getInputProps("password")}
               />
 
               <PasswordInput
-                placeholder="Подтвердите пароль"
-                disabled={
-                  signupMutation.isPending
-                }
-                {...form.getInputProps(
-                  "confirmPassword",
-                )}
+                placeholder={t("signup.confirmPassword")}
+                disabled={signupMutation.isPending}
+                {...form.getInputProps("confirmPassword")}
               />
 
-              <Button
-                type="submit"
-                loading={
-                  signupMutation.isPending
-                }
-              >
-                Зарегистрироваться
+              <Button type="submit" loading={signupMutation.isPending}>
+                {t("signup.submit")}
               </Button>
             </Stack>
           </form>

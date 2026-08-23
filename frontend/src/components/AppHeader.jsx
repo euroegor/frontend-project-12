@@ -1,23 +1,15 @@
-import {
-  Anchor,
-  Button,
-  Group,
-} from "@mantine/core";
+import { Anchor, Button, Group } from "@mantine/core";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  Link,
-  useNavigate,
-} from "react-router";
-
+import { Link, useNavigate } from "react-router";
 import useChatStore from "../store/useChatStore.js";
+import { useTranslation } from "react-i18next";
 
 const AppHeader = ({ children }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const isAuthenticated = Boolean(
-    localStorage.getItem("token"),
-  );
+  const isAuthenticated = Boolean(localStorage.getItem("token"));
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -25,13 +17,9 @@ const AppHeader = ({ children }) => {
 
     queryClient.clear();
 
-    useChatStore
-      .getState()
-      .setCurrentChannelId(null);
+    useChatStore.getState().setCurrentChannelId(null);
 
-    useChatStore
-      .getState()
-      .closeModal();
+    useChatStore.getState().closeModal();
 
     navigate("/login", {
       replace: true,
@@ -39,11 +27,7 @@ const AppHeader = ({ children }) => {
   };
 
   return (
-    <Group
-      h="100%"
-      justify="space-between"
-      wrap="nowrap"
-    >
+    <Group h="100%" justify="space-between" wrap="nowrap">
       <Anchor
         component={Link}
         to="/"
@@ -52,16 +36,14 @@ const AppHeader = ({ children }) => {
         fw={500}
         size="xl"
       >
-        Hexlet Chat
+        {t("header.title")}
       </Anchor>
 
       <Group gap="sm" wrap="nowrap">
         {children}
 
         {isAuthenticated && (
-          <Button onClick={handleLogout}>
-            Выйти
-          </Button>
+          <Button onClick={handleLogout}>{t("header.logout")}</Button>
         )}
       </Group>
     </Group>

@@ -10,30 +10,26 @@ import {
 } from "@mantine/core";
 
 import useChatStore from "../store/useChatStore.js";
+import { useTranslation } from "react-i18next";
 
 const ChannelsSidebar = ({ channels }) => {
-  const currentChannelId = useChatStore(
-    (state) => state.currentChannelId,
-  );
+  const { t } = useTranslation();
+  const currentChannelId = useChatStore((state) => state.currentChannelId);
 
   const setCurrentChannelId = useChatStore(
     (state) => state.setCurrentChannelId,
   );
 
-  const openModal = useChatStore(
-    (state) => state.openModal,
-  );
+  const openModal = useChatStore((state) => state.openModal);
 
   return (
     <>
       <Group justify="space-between" mb="md">
-        <Title order={4}>
-          Каналы
-        </Title>
+        <Title order={4}>{t("chat.channels")}</Title>
 
         <ActionIcon
           variant="subtle"
-          aria-label="Добавить канал"
+          aria-label={t("channels.addAction")}
           onClick={() => openModal("add")}
         >
           +
@@ -42,22 +38,14 @@ const ChannelsSidebar = ({ channels }) => {
 
       <Stack gap="xs">
         {channels.map((channel) => (
-          <Group
-            key={channel.id}
-            gap={4}
-            wrap="nowrap"
-          >
+          <Group key={channel.id} gap={4} wrap="nowrap">
             <Box flex={1} miw={0}>
               <NavLink
                 active={channel.id === currentChannelId}
                 onClick={() => {
                   setCurrentChannelId(channel.id);
                 }}
-                label={(
-                  <Text truncate="end">
-                    # {channel.name}
-                  </Text>
-                )}
+                label={<Text truncate="end"># {channel.name}</Text>}
               />
             </Box>
 
@@ -66,7 +54,9 @@ const ChannelsSidebar = ({ channels }) => {
                 <Menu.Target>
                   <ActionIcon
                     variant="subtle"
-                    aria-label={`Управление каналом ${channel.name}`}
+                    aria-label={t("channels.manage", {
+                      name: channel.name,
+                    })}
                   >
                     ⋮
                   </ActionIcon>
@@ -78,7 +68,7 @@ const ChannelsSidebar = ({ channels }) => {
                       openModal("rename", channel.id);
                     }}
                   >
-                    Переименовать
+                    {t("channels.renameAction")}
                   </Menu.Item>
 
                   <Menu.Item
@@ -87,7 +77,7 @@ const ChannelsSidebar = ({ channels }) => {
                       openModal("remove", channel.id);
                     }}
                   >
-                    Удалить
+                    {t("channels.removeAction")}
                   </Menu.Item>
                 </Menu.Dropdown>
               </Menu>
