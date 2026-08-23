@@ -1,8 +1,8 @@
 import axios from "axios";
 
-const api = axios.create({
-  baseURL: "/api/v1",
-});
+import routes from "../routes.js";
+
+const api = axios.create();
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
@@ -15,25 +15,40 @@ api.interceptors.request.use((config) => {
 });
 
 export const getChannels = () => (
-  api.get("/channels").then((response) => response.data)
+  api
+    .get(routes.channelsPath())
+    .then((response) => response.data)
 );
 
 export const getMessages = () => (
-  api.get("/messages").then((response) => response.data)
+  api
+    .get(routes.messagesPath())
+    .then((response) => response.data)
 );
 
 export const addMessage = (message) => (
-  api.post("/messages", message).then((response) => response.data)
+  api
+    .post(routes.messagesPath(), message)
+    .then((response) => response.data)
 );
 
 export const addChannel = (name) => (
-  api.post("/channels", { name }).then((response) => response.data)
+  api
+    .post(routes.channelsPath(), { name })
+    .then((response) => response.data)
 );
 
 export const renameChannel = ({ id, name }) => (
-  api.patch(`/channels/${id}`, { name }).then((response) => response.data)
+  api
+    .patch(
+      routes.channelPath(id),
+      { name },
+    )
+    .then((response) => response.data)
 );
 
 export const removeChannel = (id) => (
-  api.delete(`/channels/${id}`).then((response) => response.data)
+  api
+    .delete(routes.channelPath(id))
+    .then((response) => response.data)
 );

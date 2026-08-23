@@ -1,8 +1,10 @@
 import axios from "axios";
 
+import routes from "../routes.js";
+
 export const signupUser = ({ username, password }) => (
   axios
-    .post("/api/v1/signup", {
+    .post(routes.signupPath(), {
       username,
       password,
     })

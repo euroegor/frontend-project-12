@@ -18,6 +18,7 @@ import { useForm } from "@mantine/form";
 import { Link, useNavigate } from "react-router";
 import AppHeader from "../components/AppHeader.jsx";
 import { useTranslation } from "react-i18next";
+import routes from "../routes.js";
 
 const LoginPage = () => {
   const { t } = useTranslation();
@@ -34,7 +35,7 @@ const LoginPage = () => {
     form.clearErrors();
 
     axios
-      .post("/api/v1/login", values)
+      .post(routes.loginPath(), values)
       .then((response) => {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("username", response.data.username);
