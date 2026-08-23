@@ -8,6 +8,7 @@ import "./i18n.js";
 import App from "./App.jsx";
 import { Notifications } from "@mantine/notifications";
 import "@mantine/notifications/styles.css";
+import "./sentry.js";
 
 const queryClient = new QueryClient();
 
