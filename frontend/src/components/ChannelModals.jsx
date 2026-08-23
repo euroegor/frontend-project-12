@@ -3,11 +3,13 @@ import { hasLength, isNotEmpty, useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-
 import { addChannel, removeChannel, renameChannel } from "../api/chatApi.js";
 import useChatStore from "../store/useChatStore.js";
+import cleanText from "../utils/profanityFilter.js";
 
 const validateChannelName = (value, channels, t, currentChannelId = null) => {
+  const normalizedName = cleanText(value.trim());
+
   const validateNotEmpty = isNotEmpty(t("channels.errors.required"));
 
   const validateLength = hasLength(
@@ -15,19 +17,17 @@ const validateChannelName = (value, channels, t, currentChannelId = null) => {
     t("channels.errors.length"),
   );
 
-  const emptyError = validateNotEmpty(value);
+  const emptyError = validateNotEmpty(normalizedName);
 
   if (emptyError) {
     return emptyError;
   }
 
-  const lengthError = validateLength(value);
+  const lengthError = validateLength(normalizedName);
 
   if (lengthError) {
     return lengthError;
   }
-
-  const normalizedName = value.trim();
 
   const channelExists = channels.some(
     (channel) =>
@@ -87,7 +87,7 @@ const AddChannelModal = ({ channels }) => {
   });
 
   const handleSubmit = ({ name }) => {
-    mutation.mutate(name.trim());
+    mutation.mutate(cleanText(name.trim()));
   };
 
   return (
@@ -161,7 +161,7 @@ const RenameChannelModal = ({ channel, channels }) => {
   const handleSubmit = ({ name }) => {
     mutation.mutate({
       id: channel.id,
-      name: name.trim(),
+      name: cleanText(name.trim()),
     });
   };
 

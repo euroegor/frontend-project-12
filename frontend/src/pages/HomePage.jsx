@@ -24,6 +24,7 @@ import ChannelModals from "../components/ChannelModals.jsx";
 import AppHeader from "../components/AppHeader.jsx";
 import { useTranslation } from "react-i18next";
 import { notifications } from "@mantine/notifications";
+import cleanText from "../utils/profanityFilter.js";
 
 const HomePage = () => {
   const { t } = useTranslation();
@@ -211,7 +212,7 @@ const HomePage = () => {
   );
 
   const handleSubmit = ({ message }) => {
-    const body = message.trim();
+    const body = cleanText(message.trim());
     const username = localStorage.getItem("username");
 
     if (!body || !username || !currentChannelId) {
