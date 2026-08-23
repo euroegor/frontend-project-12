@@ -15,7 +15,8 @@ import {
   Title,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
+import AppHeader from "../components/AppHeader.jsx";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -46,10 +47,7 @@ const LoginPage = () => {
           return;
         }
 
-        form.setFieldError(
-          "username",
-          "Ошибка соединения с сервером",
-        );
+        form.setFieldError("username", "Ошибка соединения с сервером");
       });
   };
 
@@ -57,27 +55,14 @@ const LoginPage = () => {
     <Box mih="100vh" bg="gray.0">
       <Paper radius={0} shadow="xs" py="sm">
         <Container size="lg">
-          <Text size="xl" fw={500}>
-            Hexlet Chat
-          </Text>
+          <AppHeader />
         </Container>
       </Paper>
 
       <Center mih="calc(100vh - 60px)" px="md">
-        <Paper
-          withBorder
-          shadow="sm"
-          radius="sm"
-          w={800}
-          maw="100%"
-        >
+        <Paper withBorder shadow="sm" radius="sm" w={800} maw="100%">
           <Box p={48}>
-            <Group
-              align="center"
-              justify="center"
-              gap={64}
-              wrap="nowrap"
-            >
+            <Group align="center" justify="center" gap={64} wrap="nowrap">
               <Box w={340}>
                 <Title order={1} ta="center" mb="md">
                   Войти
@@ -97,11 +82,7 @@ const LoginPage = () => {
                       {...form.getInputProps("password")}
                     />
 
-                    <Button
-                      type="submit"
-                      variant="outline"
-                      fullWidth
-                    >
+                    <Button type="submit" variant="outline" fullWidth>
                       Войти
                     </Button>
                   </Stack>
@@ -115,7 +96,7 @@ const LoginPage = () => {
           <Box py="lg" bg="gray.0">
             <Text ta="center">
               Нет аккаунта?{" "}
-              <Anchor href="#">
+              <Anchor component={Link} to="/signup">
                 Регистрация
               </Anchor>
             </Text>

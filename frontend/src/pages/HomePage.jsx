@@ -22,6 +22,7 @@ import socket from "../socket.js";
 import useChatStore from "../store/useChatStore.js";
 import ChannelsSidebar from "../components/ChannelsSidebar.jsx";
 import ChannelModals from "../components/ChannelModals.jsx";
+import AppHeader from "../components/AppHeader.jsx";
 
 const HomePage = () => {
   const queryClient = useQueryClient();
@@ -215,13 +216,13 @@ const HomePage = () => {
       padding="md"
     >
       <AppShell.Header>
-        <Group h="100%" px="md" justify="space-between">
-          <Title order={3}>Hexlet Chat</Title>
-
-          <Badge color={isSocketConnected ? "green" : "red"} variant="light">
-            {isSocketConnected ? "В сети" : "Нет соединения"}
-          </Badge>
-        </Group>
+        <Box h="100%" px="md">
+          <AppHeader>
+            <Badge color={isSocketConnected ? "green" : "red"} variant="light">
+              {isSocketConnected ? "В сети" : "Нет соединения"}
+            </Badge>
+          </AppHeader>
+        </Box>
       </AppShell.Header>
 
       <AppShell.Navbar p="md">
