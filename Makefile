@@ -1,9 +1,9 @@
 install:
-	pnpm install --frozen-lockfile
-	pnpm --dir frontend install --frozen-lockfile
+	npx -y pnpm@10.34.5 install --frozen-lockfile
+	npx -y pnpm@10.34.5 --dir frontend install --frozen-lockfile
 
 build:
-	pnpm --dir frontend run build
+	npx -y pnpm@10.34.5 --dir frontend run build
 
 start:
-	pnpm exec start-server -s ./frontend/dist
+	npx -y pnpm@10.34.5 exec start-server -s ./frontend/dist
