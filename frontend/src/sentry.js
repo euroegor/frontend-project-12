@@ -6,8 +6,4 @@ Sentry.init({
   environment: import.meta.env.MODE,
 });
 
-Sentry.captureException(
-  new Error("Production Bugsink test error"),
-);
-
 export default Sentry;
