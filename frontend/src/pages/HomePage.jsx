@@ -23,6 +23,7 @@ import ChannelsSidebar from "../components/ChannelsSidebar.jsx";
 import ChannelModals from "../components/ChannelModals.jsx";
 import AppHeader from "../components/AppHeader.jsx";
 import { useTranslation } from "react-i18next";
+import { notifications } from "@mantine/notifications";
 
 const HomePage = () => {
   const { t } = useTranslation();
@@ -84,10 +85,19 @@ const HomePage = () => {
   useEffect(() => {
     const handleConnect = () => {
       setIsSocketConnected(true);
+
+      notifications.hide("network-error");
     };
 
     const handleDisconnect = () => {
       setIsSocketConnected(false);
+
+      notifications.show({
+        id: "network-error",
+        color: "red",
+        message: t("chat.notifications.networkError"),
+        autoClose: false,
+      });
     };
 
     const handleNewMessage = (newMessage) => {
@@ -164,7 +174,17 @@ const HomePage = () => {
       socket.off("renameChannel", handleRenameChannel);
       socket.off("removeChannel", handleRemoveChannel);
     };
-  }, [queryClient]);
+  }, [queryClient, t]);
+
+  useEffect(() => {
+    if (channelsQuery.isError || messagesQuery.isError) {
+      notifications.show({
+        id: "chat-load-error",
+        color: "red",
+        message: t("chat.notifications.loadError"),
+      });
+    }
+  }, [channelsQuery.isError, messagesQuery.isError, t]);
 
   if (channelsQuery.isPending || messagesQuery.isPending) {
     return (
