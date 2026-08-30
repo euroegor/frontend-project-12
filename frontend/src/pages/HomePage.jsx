@@ -24,6 +24,7 @@ import AppHeader from "../components/AppHeader.jsx";
 import ChannelModals from "../components/ChannelModals.jsx";
 import ChannelsSidebar from "../components/ChannelsSidebar.jsx";
 import { useChatStore, useChatStoreApi } from "../hooks/useChatStore.js";
+import useNotificationsStore from "../hooks/useNotificationsStore.js";
 import useSocket from "../hooks/useSocket.js";
 import cleanText from "../utils/profanityFilter.js";
 
@@ -33,6 +34,7 @@ const HomePage = () => {
   const queryClient = useQueryClient();
   const socket = useSocket();
   const chatStore = useChatStoreApi();
+  const notificationsStore = useNotificationsStore();
 
   const [isSocketConnected, setIsSocketConnected] = useState(
     Boolean(socket.connected),
@@ -93,18 +95,21 @@ const HomePage = () => {
     const handleConnect = () => {
       setIsSocketConnected(true);
 
-      notifications.hide("network-error");
+      notifications.hide("network-error", notificationsStore);
     };
 
     const handleDisconnect = () => {
       setIsSocketConnected(false);
 
-      notifications.show({
-        id: "network-error",
-        color: "red",
-        message: t("chat.notifications.networkError"),
-        autoClose: false,
-      });
+      notifications.show(
+        {
+          id: "network-error",
+          color: "red",
+          message: t("chat.notifications.networkError"),
+          autoClose: false,
+        },
+        notificationsStore,
+      );
     };
 
     const handleNewMessage = (newMessage) => {
@@ -181,17 +186,20 @@ const HomePage = () => {
       socket.off("renameChannel", handleRenameChannel);
       socket.off("removeChannel", handleRemoveChannel);
     };
-  }, [socket, queryClient, chatStore, t]);
+  }, [socket, queryClient, chatStore, t, notificationsStore]);
 
   useEffect(() => {
     if (channelsQuery.isError || messagesQuery.isError) {
-      notifications.show({
-        id: "chat-load-error",
-        color: "red",
-        message: t("chat.notifications.loadError"),
-      });
+      notifications.show(
+        {
+          id: "chat-load-error",
+          color: "red",
+          message: t("chat.notifications.loadError"),
+        },
+        notificationsStore,
+      );
     }
-  }, [channelsQuery.isError, messagesQuery.isError, t]);
+  }, [channelsQuery.isError, messagesQuery.isError, t, notificationsStore]);
 
   if (channelsQuery.isPending || messagesQuery.isPending) {
     return (

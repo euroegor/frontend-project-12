@@ -5,8 +5,10 @@ import { useTranslation } from "react-i18next";
 
 import { removeChannel } from "../../api/chatApi.js";
 import { useChatStore } from "../../hooks/useChatStore.js";
+import useNotificationsStore from "../../hooks/useNotificationsStore.js";
 
 const RemoveChannelModal = ({ channel, channels }) => {
+  const notificationsStore = useNotificationsStore();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
@@ -36,10 +38,13 @@ const RemoveChannelModal = ({ channel, channels }) => {
         queryKey: ["messages"],
       });
 
-      notifications.show({
-        color: "green",
-        message: t("channels.notifications.removed"),
-      });
+      notifications.show(
+        {
+          color: "green",
+          message: t("channels.notifications.removed"),
+        },
+        notificationsStore,
+      );
 
       closeModal();
     },

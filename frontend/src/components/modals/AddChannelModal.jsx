@@ -3,6 +3,7 @@ import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
+import useNotificationsStore from "../../hooks/useNotificationsStore.js";
 
 import { addChannel } from "../../api/chatApi.js";
 import { useChatStore } from "../../hooks/useChatStore.js";
@@ -10,6 +11,7 @@ import cleanText from "../../utils/profanityFilter.js";
 import validateChannelName from "../../utils/validateChannelName.js";
 
 const AddChannelModal = ({ channels }) => {
+  const notificationsStore = useNotificationsStore();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
@@ -39,10 +41,13 @@ const AddChannelModal = ({ channels }) => {
         queryKey: ["channels"],
       });
 
-      notifications.show({
-        color: "green",
-        message: t("channels.notifications.created"),
-      });
+      notifications.show(
+        {
+          color: "green",
+          message: t("channels.notifications.created"),
+        },
+        notificationsStore,
+      );
 
       form.reset();
       closeModal();

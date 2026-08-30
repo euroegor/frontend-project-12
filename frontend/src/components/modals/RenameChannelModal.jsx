@@ -8,8 +8,10 @@ import { renameChannel } from "../../api/chatApi.js";
 import { useChatStore } from "../../hooks/useChatStore.js";
 import cleanText from "../../utils/profanityFilter.js";
 import validateChannelName from "../../utils/validateChannelName.js";
+import useNotificationsStore from "../../hooks/useNotificationsStore.js";
 
 const RenameChannelModal = ({ channel, channels }) => {
+  const notificationsStore = useNotificationsStore();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
 
@@ -33,10 +35,13 @@ const RenameChannelModal = ({ channel, channels }) => {
         queryKey: ["channels"],
       });
 
-      notifications.show({
-        color: "green",
-        message: t("channels.notifications.renamed"),
-      });
+      notifications.show(
+        {
+          color: "green",
+          message: t("channels.notifications.renamed"),
+        },
+        notificationsStore,
+      );
 
       closeModal();
     },

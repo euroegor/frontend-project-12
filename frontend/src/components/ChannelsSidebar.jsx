@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   ActionIcon,
   Box,
@@ -14,6 +15,8 @@ import { useChatStore } from "../hooks/useChatStore.js";
 
 const ChannelsSidebar = ({ channels }) => {
   const { t } = useTranslation();
+
+  const [openedMenuId, setOpenedMenuId] = useState(null);
 
   const currentChannelId = useChatStore((state) => state.currentChannelId);
 
@@ -56,7 +59,12 @@ const ChannelsSidebar = ({ channels }) => {
 
             {channel.removable && (
               <Menu
+                opened={openedMenuId === channel.id}
+                onChange={(opened) => {
+                  setOpenedMenuId(opened ? channel.id : null);
+                }}
                 position="bottom-end"
+                withinPortal={false}
                 transitionProps={{
                   duration: 0,
                 }}
@@ -73,6 +81,8 @@ const ChannelsSidebar = ({ channels }) => {
                 <Menu.Dropdown>
                   <Menu.Item
                     onClick={() => {
+                      setOpenedMenuId(null);
+
                       openModal("rename", channel.id);
                     }}
                   >
@@ -82,6 +92,8 @@ const ChannelsSidebar = ({ channels }) => {
                   <Menu.Item
                     color="red"
                     onClick={() => {
+                      setOpenedMenuId(null);
+
                       openModal("remove", channel.id);
                     }}
                   >
