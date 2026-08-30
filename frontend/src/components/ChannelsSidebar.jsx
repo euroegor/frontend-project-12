@@ -44,16 +44,23 @@ const ChannelsSidebar = ({ channels }) => {
               <NavLink
                 component="button"
                 type="button"
+                aria-label={`# ${channel.name}`}
                 active={channel.id === currentChannelId}
                 onClick={() => {
                   setCurrentChannelId(channel.id);
                 }}
-                label={<Text truncate="end"># {channel.name}</Text>}
+                leftSection="#"
+                label={<Text truncate="end">{channel.name}</Text>}
               />
             </Box>
 
             {channel.removable && (
-              <Menu position="bottom-end">
+              <Menu
+                position="bottom-end"
+                transitionProps={{
+                  duration: 0,
+                }}
+              >
                 <Menu.Target>
                   <ActionIcon
                     variant="subtle"
