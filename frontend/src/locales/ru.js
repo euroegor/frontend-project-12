@@ -39,6 +39,7 @@ const ru = {
     messagesCount_few: "{{count}} сообщения",
     messagesCount_many: "{{count}} сообщений",
     messagesCount_other: "{{count}} сообщения",
+    messageLabel: "Новое сообщение",
     messagePlaceholder: "Введите сообщение...",
     send: "Отправить",
     online: "В сети",

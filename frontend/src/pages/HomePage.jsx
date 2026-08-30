@@ -23,10 +23,7 @@ import { addMessage, getChannels, getMessages } from "../api/chatApi.js";
 import AppHeader from "../components/AppHeader.jsx";
 import ChannelModals from "../components/ChannelModals.jsx";
 import ChannelsSidebar from "../components/ChannelsSidebar.jsx";
-import {
-  useChatStore,
-  useChatStoreApi,
-} from "../hooks/useChatStore.js";
+import { useChatStore, useChatStoreApi } from "../hooks/useChatStore.js";
 import useSocket from "../hooks/useSocket.js";
 import cleanText from "../utils/profanityFilter.js";
 
@@ -292,7 +289,7 @@ const HomePage = () => {
           <form onSubmit={form.onSubmit(handleSubmit)}>
             <Group gap="sm" align="flex-start">
               <TextInput
-                aria-label={t("chat.messagePlaceholder")}
+                aria-label={t("chat.messageLabel")}
                 placeholder={t("chat.messagePlaceholder")}
                 flex={1}
                 disabled={sendMessageMutation.isPending}

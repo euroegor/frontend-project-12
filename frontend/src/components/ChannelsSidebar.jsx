@@ -42,6 +42,8 @@ const ChannelsSidebar = ({ channels }) => {
           <Group key={channel.id} gap={4} wrap="nowrap">
             <Box flex={1} miw={0}>
               <NavLink
+                component="button"
+                type="button"
                 active={channel.id === currentChannelId}
                 onClick={() => {
                   setCurrentChannelId(channel.id);
