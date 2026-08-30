@@ -1,41 +1,22 @@
 import {
   Box,
   Button,
-  Center,
-  Container,
   Paper,
   PasswordInput,
   Stack,
   TextInput,
   Title,
 } from "@mantine/core";
-import { hasLength, isNotEmpty, matchesField, useForm } from "@mantine/form";
-import { useMutation } from "@tanstack/react-query";
+import { hasLength, isNotEmpty, useForm } from "@mantine/form";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
+
 import { signupUser } from "../api/authApi.js";
 import AppHeader from "../components/AppHeader.jsx";
-import { useTranslation } from "react-i18next";
 
 const SignupPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-
-  const required = isNotEmpty(t("signup.errors.required"));
-
-  const usernameLength = hasLength(
-    { min: 3, max: 20 },
-    t("signup.errors.usernameLength"),
-  );
-
-  const passwordLength = hasLength(
-    { min: 6 },
-    t("signup.errors.passwordLength"),
-  );
-
-  const passwordsMatch = matchesField(
-    "password",
-    t("signup.errors.passwordsMatch"),
-  );
 
   const form = useForm({
     initialValues: {
@@ -45,90 +26,109 @@ const SignupPage = () => {
     },
 
     validate: {
-      username: (value) => required(value) || usernameLength(value.trim()),
+      username: (value) => {
+        const requiredError = isNotEmpty(t("signup.errors.required"))(value);
 
-      password: (value) => required(value) || passwordLength(value),
+        if (requiredError) {
+          return requiredError;
+        }
 
-      confirmPassword: (value, values) =>
-        required(value) || passwordsMatch(value, values),
-    },
-  });
+        return hasLength(
+          { min: 3, max: 20 },
+          t("signup.errors.usernameLength"),
+        )(value.trim());
+      },
 
-  const signupMutation = useMutation({
-    mutationFn: signupUser,
+      password: (value) => {
+        const requiredError = isNotEmpty(t("signup.errors.required"))(value);
 
-    onSuccess: (data) => {
-      localStorage.setItem("token", data.token);
+        if (requiredError) {
+          return requiredError;
+        }
 
-      localStorage.setItem("username", data.username);
+        return hasLength({ min: 6 }, t("signup.errors.passwordLength"))(value);
+      },
 
-      navigate("/", {
-        replace: true,
-      });
-    },
+      confirmPassword: (value, values) => {
+        if (!value) {
+          return t("signup.errors.required");
+        }
 
-    onError: (error) => {
-      if (error.response?.status === 409) {
-        form.setFieldError("username", t("signup.errors.userExists"));
+        if (value !== values.password) {
+          return t("signup.errors.passwordsMatch");
+        }
 
-        return;
-      }
-
-      form.setFieldError("username", t("signup.errors.network"));
+        return null;
+      },
     },
   });
 
   const handleSubmit = ({ username, password }) => {
     form.clearErrors();
 
-    signupMutation.mutate({
+    signupUser({
       username: username.trim(),
       password,
-    });
+    })
+      .then((response) => {
+        localStorage.setItem("token", response.token);
+
+        localStorage.setItem("username", response.username);
+
+        navigate("/", {
+          replace: true,
+        });
+      })
+      .catch((error) => {
+        if (error.response?.status === 409) {
+          form.setFieldError("username", t("signup.errors.userExists"));
+
+          return;
+        }
+
+        form.setFieldError("username", t("signup.errors.network"));
+      });
   };
 
   return (
-    <Box mih="100vh" bg="gray.0">
-      <Paper radius={0} shadow="xs" py="sm">
-        <Container size="lg">
-          <AppHeader />
-        </Container>
+    <Box bg="gray.0" mih="100vh">
+      <Paper radius={0} shadow="xs" px="md" h={60}>
+        <AppHeader />
       </Paper>
 
-      <Center mih="calc(100vh - 60px)" px="md">
-        <Paper withBorder shadow="sm" radius="sm" w={500} maw="100%" p="xl">
-          <Title order={1} ta="center" mb="lg">
+      <Box maw={500} mx="auto" px="md" py={80}>
+        <Paper withBorder shadow="sm" radius="md" p={48}>
+          <Title order={2} ta="center" mb="xl">
             {t("signup.title")}
           </Title>
 
           <form onSubmit={form.onSubmit(handleSubmit)}>
-            <Stack gap="md">
+            <Stack>
               <TextInput
+                label={t("signup.username")}
                 placeholder={t("signup.username")}
-                autoFocus
-                disabled={signupMutation.isPending}
                 {...form.getInputProps("username")}
               />
 
               <PasswordInput
+                label={t("signup.password")}
                 placeholder={t("signup.password")}
-                disabled={signupMutation.isPending}
                 {...form.getInputProps("password")}
               />
 
               <PasswordInput
+                label={t("signup.confirmPassword")}
                 placeholder={t("signup.confirmPassword")}
-                disabled={signupMutation.isPending}
                 {...form.getInputProps("confirmPassword")}
               />
 
-              <Button type="submit" loading={signupMutation.isPending}>
+              <Button type="submit" fullWidth>
                 {t("signup.submit")}
               </Button>
             </Stack>
           </form>
         </Paper>
-      </Center>
+      </Box>
     </Box>
   );
 };

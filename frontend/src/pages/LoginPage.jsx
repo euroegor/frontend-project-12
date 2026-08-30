@@ -1,12 +1,8 @@
-import axios from "axios";
 import {
   Anchor,
   Box,
   Button,
-  Center,
-  Container,
   Divider,
-  Group,
   Paper,
   PasswordInput,
   Stack,
@@ -15,9 +11,11 @@ import {
   Title,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { Link, useNavigate } from "react-router";
-import AppHeader from "../components/AppHeader.jsx";
+import axios from "axios";
 import { useTranslation } from "react-i18next";
+import { Link, useNavigate } from "react-router";
+
+import AppHeader from "../components/AppHeader.jsx";
 import routes from "../routes.js";
 
 const LoginPage = () => {
@@ -38,12 +36,17 @@ const LoginPage = () => {
       .post(routes.loginPath(), values)
       .then((response) => {
         localStorage.setItem("token", response.data.token);
+
         localStorage.setItem("username", response.data.username);
-        navigate("/");
+
+        navigate("/", {
+          replace: true,
+        });
       })
       .catch((error) => {
         if (error.response?.status === 401) {
           form.setFieldError("username", t("login.errors.invalidCredentials"));
+
           return;
         }
 
@@ -52,49 +55,43 @@ const LoginPage = () => {
   };
 
   return (
-    <Box mih="100vh" bg="gray.0">
-      <Paper radius={0} shadow="xs" py="sm">
-        <Container size="lg">
-          <AppHeader />
-        </Container>
+    <Box bg="gray.0" mih="100vh">
+      <Paper radius={0} shadow="xs" px="md" h={60}>
+        <AppHeader />
       </Paper>
 
-      <Center mih="calc(100vh - 60px)" px="md">
-        <Paper withBorder shadow="sm" radius="sm" w={800} maw="100%">
-          <Box p={48}>
-            <Group align="center" justify="center" gap={64} wrap="nowrap">
-              <Box w={340}>
-                <Title order={1} ta="center" mb="md">
-                  {t("login.title")}
-                </Title>
+      <Box maw={800} mx="auto" px="md" py={80}>
+        <Paper withBorder shadow="sm" radius="md" p={48}>
+          <Box maw={340} mx="auto">
+            <Title order={2} ta="center" mb="xl">
+              {t("login.title")}
+            </Title>
 
-                <form onSubmit={form.onSubmit(handleSubmit)}>
-                  <Stack gap="md">
-                    <TextInput
-                      placeholder={t("login.username")}
-                      size="md"
-                      {...form.getInputProps("username")}
-                    />
+            <form onSubmit={form.onSubmit(handleSubmit)}>
+              <Stack>
+                <TextInput
+                  label={t("login.username")}
+                  placeholder={t("login.username")}
+                  disabled={form.submitting}
+                  {...form.getInputProps("username")}
+                />
 
-                    <PasswordInput
-                      placeholder={t("login.password")}
-                      size="md"
-                      {...form.getInputProps("password")}
-                    />
+                <PasswordInput
+                  label={t("login.password")}
+                  placeholder={t("login.password")}
+                  disabled={form.submitting}
+                  {...form.getInputProps("password")}
+                />
 
-                    <Button type="submit" variant="outline" fullWidth>
-                      {t("login.submit")}
-                    </Button>
-                  </Stack>
-                </form>
-              </Box>
-            </Group>
-          </Box>
+                <Button type="submit" variant="outline" fullWidth>
+                  {t("login.submit")}
+                </Button>
+              </Stack>
+            </form>
 
-          <Divider />
+            <Divider my="xl" />
 
-          <Box py="lg" bg="gray.0">
-            <Text ta="center">
+            <Text ta="center" c="dimmed">
               {t("login.noAccount")}{" "}
               <Anchor component={Link} to="/signup">
                 {t("login.signup")}
@@ -102,7 +99,7 @@ const LoginPage = () => {
             </Text>
           </Box>
         </Paper>
-      </Center>
+      </Box>
     </Box>
   );
 };
