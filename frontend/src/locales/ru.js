@@ -12,6 +12,7 @@ const ru = {
     noAccount: "Нет аккаунта?",
     signup: "Регистрация",
     errors: {
+      required: "Обязательное поле",
       invalidCredentials: "Неверные имя пользователя или пароль",
       network: "Ошибка соединения",
     },

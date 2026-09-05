@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AppShell,
@@ -35,6 +35,9 @@ const HomePage = () => {
   const socket = useSocket();
   const chatStore = useChatStoreApi();
   const notificationsStore = useNotificationsStore();
+
+  const messagesEndRef = useRef(null);
+  const messageInputRef = useRef(null);
 
   const [isSocketConnected, setIsSocketConnected] = useState(
     Boolean(socket.connected),
@@ -81,6 +84,16 @@ const HomePage = () => {
 
   const messages = messagesQuery.data ?? [];
 
+  const currentChannel = channels.find(
+    (channel) => channel.id === currentChannelId,
+  );
+
+  const currentMessages = messages.filter(
+    (message) => message.channelId === currentChannelId,
+  );
+
+  const currentMessagesCount = currentMessages.length;
+
   useEffect(() => {
     if (currentChannelId === null && channels.length > 0) {
       const generalChannel = channels.find(
@@ -90,6 +103,18 @@ const HomePage = () => {
       setCurrentChannelId(generalChannel?.id ?? channels[0].id);
     }
   }, [channels, currentChannelId, setCurrentChannelId]);
+
+  useEffect(() => {
+    if (!sendMessageMutation.isPending) {
+      messageInputRef.current?.focus();
+    }
+  }, [sendMessageMutation.isPending, currentChannelId]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({
+      block: "end",
+    });
+  }, [currentChannelId, currentMessagesCount]);
 
   useEffect(() => {
     const handleConnect = () => {
@@ -172,18 +197,28 @@ const HomePage = () => {
     };
 
     socket.on("connect", handleConnect);
+
     socket.on("disconnect", handleDisconnect);
+
     socket.on("newMessage", handleNewMessage);
+
     socket.on("newChannel", handleNewChannel);
+
     socket.on("renameChannel", handleRenameChannel);
+
     socket.on("removeChannel", handleRemoveChannel);
 
     return () => {
       socket.off("connect", handleConnect);
+
       socket.off("disconnect", handleDisconnect);
+
       socket.off("newMessage", handleNewMessage);
+
       socket.off("newChannel", handleNewChannel);
+
       socket.off("renameChannel", handleRenameChannel);
+
       socket.off("removeChannel", handleRemoveChannel);
     };
   }, [socket, queryClient, chatStore, t, notificationsStore]);
@@ -216,14 +251,6 @@ const HomePage = () => {
       </Center>
     );
   }
-
-  const currentChannel = channels.find(
-    (channel) => channel.id === currentChannelId,
-  );
-
-  const currentMessages = messages.filter(
-    (message) => message.channelId === currentChannelId,
-  );
 
   const handleSubmit = ({ message }) => {
     const body = cleanText(message.trim());
@@ -281,22 +308,31 @@ const HomePage = () => {
           <ScrollArea flex={1}>
             <Stack gap="sm">
               {currentMessages.map((message) => (
-                <Box key={message.id}>
-                  <Text>
+                <Box key={message.id} maw="100%">
+                  <Text
+                    style={{
+                      overflowWrap: "anywhere",
+                    }}
+                  >
                     <Text span fw={700}>
                       {message.username}
                     </Text>
+
                     {": "}
                     {message.body}
                   </Text>
                 </Box>
               ))}
+
+              <div ref={messagesEndRef} />
             </Stack>
           </ScrollArea>
 
           <form onSubmit={form.onSubmit(handleSubmit)}>
             <Group gap="sm" align="flex-start">
               <TextInput
+                ref={messageInputRef}
+                autoFocus
                 aria-label={t("chat.messageLabel")}
                 placeholder={t("chat.messagePlaceholder")}
                 flex={1}

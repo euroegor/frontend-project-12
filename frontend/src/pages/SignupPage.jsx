@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import {
   Box,
   Button,
@@ -17,6 +18,10 @@ import AppHeader from "../components/AppHeader.jsx";
 const SignupPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+
+  const passwordInputRef = useRef(null);
+  const confirmPasswordInputRef = useRef(null);
+  const submitButtonRef = useRef(null);
 
   const form = useForm({
     initialValues: {
@@ -90,6 +95,56 @@ const SignupPage = () => {
       });
   };
 
+  const handleUsernameKeyDown = (event) => {
+    if (event.key !== "Enter") {
+      return;
+    }
+
+    event.preventDefault();
+
+    const username = form.values.username.trim();
+
+    if (username.length < 3 || username.length > 20) {
+      form.validateField("username");
+      return;
+    }
+
+    passwordInputRef.current?.focus();
+  };
+
+  const handlePasswordKeyDown = (event) => {
+    if (event.key !== "Enter") {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (form.values.password.length < 6) {
+      form.validateField("password");
+      return;
+    }
+
+    confirmPasswordInputRef.current?.focus();
+  };
+
+  const handleConfirmPasswordKeyDown = (event) => {
+    if (event.key !== "Enter") {
+      return;
+    }
+
+    event.preventDefault();
+
+    const confirmPassword = form.values.confirmPassword;
+
+    if (!confirmPassword || confirmPassword !== form.values.password) {
+      form.validateField("confirmPassword");
+
+      return;
+    }
+
+    submitButtonRef.current?.focus();
+  };
+
   return (
     <Box bg="gray.0" mih="100vh">
       <Paper radius={0} shadow="xs" px="md" h={60}>
@@ -105,24 +160,30 @@ const SignupPage = () => {
           <form onSubmit={form.onSubmit(handleSubmit)}>
             <Stack>
               <TextInput
+                autoFocus
                 label={t("signup.username")}
                 placeholder={t("signup.username")}
+                onKeyDown={handleUsernameKeyDown}
                 {...form.getInputProps("username")}
               />
 
               <PasswordInput
+                ref={passwordInputRef}
                 label={t("signup.password")}
                 placeholder={t("signup.password")}
+                onKeyDown={handlePasswordKeyDown}
                 {...form.getInputProps("password")}
               />
 
               <PasswordInput
+                ref={confirmPasswordInputRef}
                 label={t("signup.confirmPassword")}
                 placeholder={t("signup.confirmPassword")}
+                onKeyDown={handleConfirmPasswordKeyDown}
                 {...form.getInputProps("confirmPassword")}
               />
 
-              <Button type="submit" fullWidth>
+              <Button ref={submitButtonRef} type="submit" fullWidth>
                 {t("signup.submit")}
               </Button>
             </Stack>

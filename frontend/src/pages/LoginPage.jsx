@@ -17,8 +17,10 @@ import { Link, useNavigate } from "react-router";
 
 import AppHeader from "../components/AppHeader.jsx";
 import routes from "../routes.js";
+import { useRef } from "react";
 
 const LoginPage = () => {
+  const passwordInputRef = useRef(null);
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -27,13 +29,28 @@ const LoginPage = () => {
       username: "",
       password: "",
     },
+
+    validate: {
+      username: (value) => (value.trim() ? null : t("login.errors.required")),
+
+      password: (value) => (value ? null : t("login.errors.required")),
+    },
   });
 
   const handleSubmit = (values) => {
+    const username = values.username.trim();
+
+    if (!username || !values.password) {
+      return;
+    }
+
     form.clearErrors();
 
     axios
-      .post(routes.loginPath(), values)
+      .post(routes.loginPath(), {
+        username,
+        password: values.password,
+      })
       .then((response) => {
         localStorage.setItem("token", response.data.token);
 
@@ -70,16 +87,28 @@ const LoginPage = () => {
             <form onSubmit={form.onSubmit(handleSubmit)}>
               <Stack>
                 <TextInput
+                  autoFocus
                   label={t("login.username")}
                   placeholder={t("login.username")}
-                  disabled={form.submitting}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+
+                      if (!form.values.username.trim()) {
+                        form.validateField("username");
+                        return;
+                      }
+
+                      passwordInputRef.current?.focus();
+                    }
+                  }}
                   {...form.getInputProps("username")}
                 />
 
                 <PasswordInput
+                  ref={passwordInputRef}
                   label={t("login.password")}
                   placeholder={t("login.password")}
-                  disabled={form.submitting}
                   {...form.getInputProps("password")}
                 />
 
